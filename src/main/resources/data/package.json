@@ -1,0 +1,164 @@
+{
+  "register": {
+    "request": {
+      "operation": "register",
+      "values": {
+        "username": "<string>",
+        "password": "<string>"
+      }
+    },
+    "response": {
+      "response": "<number>",
+      "errorMessage": "<string>"
+    },
+    "codes": {
+      "100": "OK",
+      "101": "invalid password",
+      "102": "username not available",
+      "103": "other error cases"
+    }
+  },
+  "updateCredentials": {
+    "request": {
+      "operation": "updateCredentials",
+      "values": {
+        "username": "<string>",
+        "old_password": "<string>",
+        "new_password": "<string>"
+      }
+    },
+    "response": {
+      "response": "<number>",
+      "errorMessage": "<string>"
+    },
+    "codes": {
+      "100": "OK",
+      "101": "invalid new password",
+      "102": "username/old_password mismatch or non‑existent username",
+      "103": "new password equal to old",
+      "104": "user currently logged in",
+      "105": "other error cases"
+    }
+  },
+  "login": {
+    "request": {
+      "operation": "login",
+      "values": {
+        "username": "<string>",
+        "password": "<string>"
+      }
+    },
+    "response": {
+      "response": "<number>",
+      "errorMessage": "<string>"
+    },
+    "codes": {
+      "100": "OK",
+      "101": "username/password mismatch or non‑existent username",
+      "102": "user already logged in",
+      "103": "other error cases"
+    }
+  },
+  "logout": {
+    "request": {
+      "operation": "logout",
+      "values": {}
+    },
+    "response": {
+      "response": "<number>",
+      "errorMessage": "<string>"
+    },
+    "codes": {
+      "100": "OK",
+      "101": "username/connection mismatch, non‑existent username, user not logged in, or other error cases"
+    }
+  },
+  "insertLimitOrder": {
+    "request": {
+      "operation": "insertLimitOrder",
+      "values": {
+        "type": "<string>",
+        "size": "<number>",
+        "price": "<number>"
+      }
+    },
+    "response": {
+      "orderId": "<number>"
+    }
+  },
+  "insertMarketOrder": {
+    "request": {
+      "operation": "insertMarketOrder",
+      "values": {
+        "type": "<string>",
+        "size": "<number>"
+      }
+    },
+    "response": {
+      "orderId": "<number>"
+    }
+  },
+  "insertStopOrder": {
+    "request": {
+      "operation": "insertStopOrder",
+      "values": {
+        "type": "<string>",
+        "size": "<number>",
+        "price": "<number>"
+      }
+    },
+    "response": {
+      "orderId": "<number>"
+    }
+  },
+  "cancelOrder": {
+    "request": {
+      "operation": "cancelOrder",
+      "values": {
+        "orderId": "<number>"
+      }
+    },
+    "response": {
+      "response": "<number>",
+      "errorMessage": "<string>"
+    },
+    "codes": {
+      "100": "OK",
+      "101": "order does not exist / belongs to different user / already finalized / other error cases"
+    }
+  },
+  "getPriceHistory": {
+    "request": {
+      "operation": "getPriceHistory",
+      "values": {
+        "month": "<string>"
+      }
+    },
+    "response": {
+      "prices": [
+        {
+          "date": "<string>",
+          "open": "<number>",
+          "close": "<number>",
+          "high": "<number>",
+          "low": "<number>"
+        }
+      ]
+    }
+  },
+  "closedTradesNotification": {
+    "notification": {
+      "notification": "closedTrades",
+      "trades": [
+        {
+          "orderId": "<number>",
+          "type": "<string>",
+          "orderType": "<string>",
+          "size": "<number>",
+          "price": "<number>",
+          "timestamp": "<number>"
+        }
+      ]
+    }
+  }
+}
