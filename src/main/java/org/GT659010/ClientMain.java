@@ -3,6 +3,7 @@ package org.GT659010;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.GT659010.MessageHandling.RequestMessage;
 import org.GT659010.MessageHandling.RequestMessages.*;
+import org.GT659010.MessageHandling.ResponseMessage;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -34,6 +35,11 @@ public class ClientMain {
                 out.write(jsonOut);
                 out.write('\n');
                 out.flush();
+                String line = in.readLine();          // blocca finché il server risponde
+                ResponseMessage resp = mapper.readValue(line, ResponseMessage.class);
+
+                System.out.println("Codice:  " + resp.getResponse());
+                System.out.println("Messaggio: " + resp.getErrorMessage());
             }
 
         } catch (IOException e) {

@@ -1,0 +1,16 @@
+{
+  "lily" : {
+    "username" : "lily",
+    "password" : "passw0rd",
+    "usdbalance" : 2000000,
+    "btcbalance" : 0,
+    "online" : true
+  },
+  "grudy" : {
+    "username" : "grudy",
+    "password" : "passw0rd",
+    "usdbalance" : 2000000,
+    "btcbalance" : 0,
+    "online" : true
+  }
+}

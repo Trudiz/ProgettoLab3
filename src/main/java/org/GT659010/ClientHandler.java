@@ -1,18 +1,25 @@
 package org.GT659010;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.GT659010.MessageHandling.Payload;
+import org.GT659010.MessageHandling.RequestHandler;
 import org.GT659010.MessageHandling.RequestMessage;
+import org.GT659010.MessageHandling.RequestMessages.RegisterPayload;
 import org.GT659010.MessageHandling.ResponseMessage;
+import org.GT659010.UserHandling.User;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Map;
 
 public class ClientHandler implements Runnable {
 
     private final Socket socket;
+    private final Map<String, User> userMap;
 
-    public ClientHandler(Socket socket) {
+    public ClientHandler(Socket socket, Map<String, User> userMap) {
         this.socket = socket;
+        this.userMap = userMap;
     }
 
     @Override
@@ -23,24 +30,43 @@ public class ClientHandler implements Runnable {
             ObjectMapper mapper = new ObjectMapper();
 
             String line;
+            String jsonOut;
             ResponseMessage responseMessage;
+            RequestHandler requestHandler = new RequestHandler(userMap);
 
             while ((line = in.readLine()) != null) {
                 System.out.println("I'm in the while");
                 System.out.println(line);
                 RequestMessage requestMessage = mapper.readValue(line, RequestMessage.class);
-                HandleRequest(requestMessage);
+                String operation = requestMessage.getOperation();
+                switch (operation) {
+                    case "register":
+                        responseMessage = requestHandler.handleRegistration(requestMessage);
+                        System.out.println("Register operation successful");
+                        //Dopo invio
+                        ServerMain.save();
+                        System.out.println("Salvato con successo il file");
+                        jsonOut = mapper.writeValueAsString(responseMessage);
+                        break;
+                    case "login":
+                        responseMessage = requestHandler.handleLogin(requestMessage);
+                        //Dopo invio
+                        ServerMain.save();
+                        jsonOut = mapper.writeValueAsString(responseMessage);
+                        break;
+                    default:
+                        responseMessage = new ResponseMessage();
+                        responseMessage.setResponse(999);
+                        responseMessage.setErrorMessage("Invalid operation");
+                        jsonOut = mapper.writeValueAsString(responseMessage);
+                }
+                out.write(jsonOut);
+                out.write('\n');
+                out.flush();
             }
 
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    public void HandleRequest(RequestMessage request){
-        String operationType = request.getOperation();
-        switch (operationType) {
-            //handle all types of operations
         }
     }
 
