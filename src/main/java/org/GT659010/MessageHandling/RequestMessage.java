@@ -4,10 +4,9 @@ public class RequestMessage {
     private String operation;
     private Payload payload;
 
-    public RequestMessage() {}
-    public RequestMessage(String operation, Payload payload) {
-        this.operation = operation;
-        this.payload = payload;
+    public RequestMessage() {
+        this.operation = "Invalid operation";
+        this.payload = null;
     }
 
     public String getOperation() {

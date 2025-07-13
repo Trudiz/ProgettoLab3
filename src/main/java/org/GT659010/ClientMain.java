@@ -15,6 +15,9 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 public class ClientMain {
+
+    private static boolean clientIsRegistered = false;
+
     public static void main(String[] args) {
         try (Socket s = new Socket("localhost", 9000);
              BufferedWriter out = new BufferedWriter(
@@ -31,15 +34,17 @@ public class ClientMain {
                 msg = msg.toLowerCase();
                 String[] msgParts = msg.split("\\s+");
                 RequestMessage requestMsg = createRequest(msgParts);
-                String jsonOut = mapper.writeValueAsString(requestMsg);
-                out.write(jsonOut);
-                out.write('\n');
-                out.flush();
-                String line = in.readLine();          // blocca finché il server risponde
-                ResponseMessage resp = mapper.readValue(line, ResponseMessage.class);
+                if (requestMsg.getPayload() != null) {
+                    String jsonOut = mapper.writeValueAsString(requestMsg);
+                    out.write(jsonOut);
+                    out.write('\n');
+                    out.flush();
+                    String line = in.readLine();          // blocca finché il server risponde
+                    ResponseMessage resp = mapper.readValue(line, ResponseMessage.class);
 
-                System.out.println("Codice:  " + resp.getResponse());
-                System.out.println("Messaggio: " + resp.getErrorMessage());
+                    System.out.println("Codice:  " + resp.getResponse());
+                    System.out.println("Messaggio: " + resp.getErrorMessage());
+                }
             }
 
         } catch (IOException e) {
@@ -51,7 +56,8 @@ public class ClientMain {
         RequestMessage request = new RequestMessage();
         switch(tokens[0]) {
             case "register":
-                if (tokens.length == 3) {
+                if (tokens.length == 3 && !clientIsRegistered) {
+                    clientIsRegistered = true;
                     RegisterPayload p = new RegisterPayload(tokens[1], tokens[2]);
                     request.setOperation(tokens[0]);
                     request.setPayload(p);
@@ -60,7 +66,9 @@ public class ClientMain {
                 }
                 break;
             case "login":
-                if (tokens.length == 3) {
+                if (tokens.length == 3 && !clientIsRegistered) {
+                    //DA RIMUOVERE DOPO
+                    clientIsRegistered = true;
                     LoginPayload p = new LoginPayload(tokens[1], tokens[2]);
                     request.setOperation(tokens[0]);
                     request.setPayload(p);
@@ -69,7 +77,7 @@ public class ClientMain {
                 }
                 break;
             case "updatecredentials":
-                if (tokens.length == 4) {
+                if (tokens.length == 4 && clientIsRegistered) {
                     UpdateCredentialsPayload p = new UpdateCredentialsPayload(tokens[1], tokens[2], tokens[3]);
                     request.setOperation(tokens[0]);
                     request.setPayload(p);
@@ -78,7 +86,7 @@ public class ClientMain {
                 }
                 break;
             case "insertlimitorder":
-                if (tokens.length == 4) {
+                if (tokens.length == 4 && clientIsRegistered) {
                     int size = Integer.parseInt(tokens[2]);
                     int price = Integer.parseInt(tokens[3]);
                     LimitOrderPayload p = new LimitOrderPayload(tokens[1], size, price);
@@ -89,7 +97,7 @@ public class ClientMain {
                 }
                 break;
             case "insertmarketorder":
-                if (tokens.length == 3) {
+                if (tokens.length == 3 && clientIsRegistered) {
                     int size = Integer.parseInt(tokens[2]);
                     MarketOrderPayload p = new MarketOrderPayload(tokens[1], size);
                     request.setOperation(tokens[0]);
@@ -99,7 +107,7 @@ public class ClientMain {
                 }
                 break;
             case "insertstoporder":
-                if (tokens.length == 4) {
+                if (tokens.length == 4 && clientIsRegistered) {
                     int size = Integer.parseInt(tokens[2]);
                     int price = Integer.parseInt(tokens[3]);
                     StopOrderPayload p = new StopOrderPayload(tokens[1], size, price);
@@ -110,7 +118,7 @@ public class ClientMain {
                 }
                 break;
             case "cancelorder":
-                if (tokens.length == 2) {
+                if (tokens.length == 2 && clientIsRegistered) {
                     int orderId = Integer.parseInt(tokens[1]);
                     CancelOrderPayload p = new CancelOrderPayload(orderId);
                     request.setOperation(tokens[0]);
@@ -120,7 +128,7 @@ public class ClientMain {
                 }
                 break;
             case "getpricehistory":
-                if (tokens.length == 2) {
+                if (tokens.length == 2 && clientIsRegistered) {
                     PriceHistoryPayload p = new PriceHistoryPayload(tokens[1]);
                     request.setOperation(tokens[0]);
                     request.setPayload(p);
@@ -129,11 +137,12 @@ public class ClientMain {
                 }
                 break;
             case "logout":
-                if (tokens.length == 1) {
+                if (tokens.length == 1 && clientIsRegistered) {
+                    clientIsRegistered = false;
                     LogoutPayload p = new LogoutPayload();
                     request.setOperation(tokens[0]);
                     request.setPayload(p);
-                } else   {
+                } else  {
                     System.out.println("Wrong Number of arguments!");
                 }
                 break;

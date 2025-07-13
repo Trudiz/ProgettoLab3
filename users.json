@@ -4,13 +4,13 @@
     "password" : "passw0rd",
     "usdbalance" : 2000000,
     "btcbalance" : 0,
-    "online" : true
+    "online" : false
   },
   "grudy" : {
     "username" : "grudy",
-    "password" : "passw0rd",
+    "password" : "passw0rwd",
     "usdbalance" : 2000000,
     "btcbalance" : 0,
-    "online" : true
+    "online" : false
   }
 }

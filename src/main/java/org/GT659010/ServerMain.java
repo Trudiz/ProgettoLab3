@@ -51,6 +51,7 @@ public class ServerMain {
         try (ServerSocket serverSocket = new ServerSocket(9000);
              ExecutorService pool = Executors.newFixedThreadPool(MAX)){
             System.out.println("Server has started");
+            load();
             //Dopo dovrò aggiungere UDP
             //DataInputStream in = new DataInputStream(socket.getInputStream());
             //DataOutputStream out = new DataOutputStream(socket.getOutputStream());

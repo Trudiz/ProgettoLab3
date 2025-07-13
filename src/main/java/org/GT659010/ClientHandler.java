@@ -44,14 +44,34 @@ public class ClientHandler implements Runnable {
                         responseMessage = requestHandler.handleRegistration(requestMessage);
                         System.out.println("Register operation successful");
                         //Dopo invio
-                        ServerMain.save();
+                        if (responseMessage.getResponse() == 100) {
+                            ServerMain.save();
+                        }
                         System.out.println("Salvato con successo il file");
                         jsonOut = mapper.writeValueAsString(responseMessage);
                         break;
                     case "login":
                         responseMessage = requestHandler.handleLogin(requestMessage);
                         //Dopo invio
-                        ServerMain.save();
+                        if (responseMessage.getResponse() == 100) {
+                            ServerMain.save();
+                        }
+                        jsonOut = mapper.writeValueAsString(responseMessage);
+                        break;
+                    case "logout":
+                        responseMessage = requestHandler.handleLogout(requestMessage);
+
+                        if (responseMessage.getResponse() == 100) {
+                            ServerMain.save();
+                        }
+                        jsonOut = mapper.writeValueAsString(responseMessage);
+                        break;
+                    case "updatecredentials":
+                        responseMessage = requestHandler.handleUpdateCredentials(requestMessage);
+
+                        if (responseMessage.getResponse() == 100) {
+                            ServerMain.save();
+                        }
                         jsonOut = mapper.writeValueAsString(responseMessage);
                         break;
                     default:
