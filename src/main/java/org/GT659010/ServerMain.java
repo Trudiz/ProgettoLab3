@@ -3,6 +3,7 @@ package org.GT659010;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.GT659010.OrderHandling.OrderBook;
 import org.GT659010.UserHandling.User;
 
 import java.io.*;
@@ -21,7 +22,7 @@ public class ServerMain {
     static final int MAX = 25;
     /* ====== CONFIG =================================================== */
     private static final Path FILE = Paths.get("users.json");
-    private static final ObjectMapper MAPPER =
+    private static final ObjectMapper USERMAPPER =
             new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
     /* ====== MAPPA GLOBALE ============================================ */
@@ -32,7 +33,7 @@ public class ServerMain {
         try {
             if (Files.exists(FILE)) {
                 Map<String,User> disk =
-                        MAPPER.readValue(FILE.toFile(),
+                        USERMAPPER.readValue(FILE.toFile(),
                                 new TypeReference<Map<String,User>>() {});
                 USERS.putAll(disk);
             }
@@ -40,11 +41,11 @@ public class ServerMain {
     }
 
     /* ====== SAVE dopo ogni modifica ================================= */
-    static void save() {
+    static void saveUser() {
         try {
             // snapshot per evitare ConcurrentModificationException
-            MAPPER.writeValue(FILE.toFile(), new ConcurrentHashMap<>(USERS));
-        } catch (Exception e) { e.printStackTrace(); }
+            USERMAPPER.writeValue(FILE.toFile(), new ConcurrentHashMap<>(USERS));
+        } catch     (Exception e) { e.printStackTrace(); }
     }
 
     public static void main(String[] args) throws IOException {
@@ -52,6 +53,8 @@ public class ServerMain {
              ExecutorService pool = Executors.newFixedThreadPool(MAX)){
             System.out.println("Server has started");
             load();
+            //POI DA IMPLEMENTARE CHE VIENE INITIALIZED DA FILE
+            OrderBook orderBook = new OrderBook();
             //Dopo dovrò aggiungere UDP
             //DataInputStream in = new DataInputStream(socket.getInputStream());
             //DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -59,7 +62,7 @@ public class ServerMain {
             while(true){
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Client has connected");
-                pool.execute(new ClientHandler(clientSocket, USERS));
+                pool.execute(new ClientHandler(clientSocket, USERS, orderBook));
             }
         } catch (IOException e) {
             System.out.println(e);

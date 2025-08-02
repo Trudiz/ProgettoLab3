@@ -6,6 +6,7 @@ import org.GT659010.MessageHandling.RequestHandler;
 import org.GT659010.MessageHandling.RequestMessage;
 import org.GT659010.MessageHandling.RequestMessages.RegisterPayload;
 import org.GT659010.MessageHandling.ResponseMessage;
+import org.GT659010.OrderHandling.OrderBook;
 import org.GT659010.UserHandling.User;
 
 import java.io.*;
@@ -16,10 +17,12 @@ public class ClientHandler implements Runnable {
 
     private final Socket socket;
     private final Map<String, User> userMap;
+    private final OrderBook orderBook;
 
-    public ClientHandler(Socket socket, Map<String, User> userMap) {
+    public ClientHandler(Socket socket, Map<String, User> userMap, OrderBook book) {
         this.socket = socket;
         this.userMap = userMap;
+        this.orderBook = book;
     }
 
     @Override
@@ -45,7 +48,7 @@ public class ClientHandler implements Runnable {
                         System.out.println("Register operation successful");
                         //Dopo invio
                         if (responseMessage.getResponse() == 100) {
-                            ServerMain.save();
+                            ServerMain.saveUser();
                         }
                         System.out.println("Salvato con successo il file");
                         jsonOut = mapper.writeValueAsString(responseMessage);
@@ -54,7 +57,7 @@ public class ClientHandler implements Runnable {
                         responseMessage = requestHandler.handleLogin(requestMessage);
                         //Dopo invio
                         if (responseMessage.getResponse() == 100) {
-                            ServerMain.save();
+                            ServerMain.saveUser();
                         }
                         jsonOut = mapper.writeValueAsString(responseMessage);
                         break;
@@ -62,7 +65,7 @@ public class ClientHandler implements Runnable {
                         responseMessage = requestHandler.handleLogout(requestMessage);
 
                         if (responseMessage.getResponse() == 100) {
-                            ServerMain.save();
+                            ServerMain.saveUser();
                         }
                         jsonOut = mapper.writeValueAsString(responseMessage);
                         break;
@@ -70,7 +73,7 @@ public class ClientHandler implements Runnable {
                         responseMessage = requestHandler.handleUpdateCredentials(requestMessage);
 
                         if (responseMessage.getResponse() == 100) {
-                            ServerMain.save();
+                            ServerMain.saveUser();
                         }
                         jsonOut = mapper.writeValueAsString(responseMessage);
                         break;

@@ -31,7 +31,6 @@ public class ClientMain {
             /* 3️⃣  Interactive loop */
             String msg;
             while ((msg = console.readLine()) != null && !msg.equalsIgnoreCase("exit")) {
-                msg = msg.toLowerCase();
                 String[] msgParts = msg.split("\\s+");
                 RequestMessage requestMsg = createRequest(msgParts);
                 if (requestMsg.getPayload() != null) {
@@ -54,6 +53,7 @@ public class ClientMain {
 
     static public RequestMessage createRequest(String[] tokens) {
         RequestMessage request = new RequestMessage();
+        tokens[0] = tokens[0].toLowerCase();
         switch(tokens[0]) {
             case "register":
                 if (tokens.length == 3 && !clientIsRegistered) {

@@ -16,7 +16,7 @@ public class RequestHandler {
         this.userMap = userMap;
     }
 
-    public ResponseMessage  handleRegistration(RequestMessage requestMessage) {
+    public ResponseMessage handleRegistration(RequestMessage requestMessage) {
         ResponseMessage responseMessage = new ResponseMessage();
         RegisterPayload r = (RegisterPayload) requestMessage.getPayload();
         String username = r.getUsername();
@@ -109,6 +109,11 @@ public class RequestHandler {
             responseMessage.setResponse(100);
             responseMessage.setErrorMessage("OK!");
         }
+        return responseMessage;
+    }
+
+    public ResponseMessage handleMarketOrder (RequestMessage requestMessage) {
+        ResponseMessage responseMessage = new ResponseMessage();
 
         return responseMessage;
     }

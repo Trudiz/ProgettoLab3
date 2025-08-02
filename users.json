@@ -2,15 +2,22 @@
   "lily" : {
     "username" : "lily",
     "password" : "passw0rd",
+    "online" : false,
     "usdbalance" : 2000000,
-    "btcbalance" : 0,
-    "online" : false
+    "btcbalance" : 0
   },
   "grudy" : {
     "username" : "grudy",
     "password" : "passw0rwd",
+    "online" : false,
     "usdbalance" : 2000000,
-    "btcbalance" : 0,
-    "online" : false
+    "btcbalance" : 0
+  },
+  "luso" : {
+    "username" : "luso",
+    "password" : "passw0rd",
+    "online" : false,
+    "usdbalance" : 2000000,
+    "btcbalance" : 0
   }
 }

@@ -1,5 +1,7 @@
 package org.GT659010.UserHandling;
 
+import org.GT659010.OrderHandling.Order;
+
 import java.net.Socket;
 
 public class User {
@@ -8,7 +10,7 @@ public class User {
     private Long USDbalance;
     private Long BTCbalance;
     private boolean isOnline;
-    //private Order activeOrders;
+    private Order[] activeOrders;
     private Socket socket;
 
     public User() {}
