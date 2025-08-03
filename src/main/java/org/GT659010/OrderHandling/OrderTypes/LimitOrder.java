@@ -1,13 +1,15 @@
 package org.GT659010.OrderHandling.OrderTypes;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.GT659010.OrderHandling.Order;
 import org.GT659010.OrderHandling.Side;
 
+@JsonTypeName("limit")
 public class LimitOrder extends Order {
     private final int limitPrice;
 
-    public LimitOrder(int orderId, int userId, Side side, int size, int limitPrice) {
-        super(orderId, userId, side, size);
+    public LimitOrder(String userId, Side side, int size, int limitPrice) {
+        super(userId, side, size);
         this.limitPrice = limitPrice;
     }
 

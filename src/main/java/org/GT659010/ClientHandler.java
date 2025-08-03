@@ -35,7 +35,7 @@ public class ClientHandler implements Runnable {
             String line;
             String jsonOut;
             ResponseMessage responseMessage;
-            RequestHandler requestHandler = new RequestHandler(userMap);
+            RequestHandler requestHandler = new RequestHandler(userMap, orderBook);
 
             while ((line = in.readLine()) != null) {
                 System.out.println("I'm in the while");
@@ -91,11 +91,5 @@ public class ClientHandler implements Runnable {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public ResponseMessage createResponseMessage(RequestMessage requestMessage) {
-        ResponseMessage responseMessage = new ResponseMessage();
-
-        return responseMessage;
     }
 }

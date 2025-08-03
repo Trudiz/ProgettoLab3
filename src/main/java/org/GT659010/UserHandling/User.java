@@ -3,12 +3,14 @@ package org.GT659010.UserHandling;
 import org.GT659010.OrderHandling.Order;
 
 import java.net.Socket;
+import java.util.UUID;
 
 public class User {
     private String username;
     private String password;
-    private Long USDbalance;
-    private Long BTCbalance;
+    private String userId;
+    private int USDbalance;
+    private int BTCbalance;
     private boolean isOnline;
     private Order[] activeOrders;
     private Socket socket;
@@ -17,8 +19,9 @@ public class User {
     public User(String username, String password) {
         this.username = username;
         this.password = password;
-        this.USDbalance = 2000000L;
-        this.BTCbalance = 0L;
+        this.userId = ;
+        this.USDbalance = 2000000;
+        this.BTCbalance = 0;
         this.isOnline = true;
     }
 
@@ -55,5 +58,9 @@ public class User {
     }
     public void setOnline(boolean isOnline) {
         this.isOnline = isOnline;
+    }
+
+    public String getUUID() {
+        return userId;
     }
 }

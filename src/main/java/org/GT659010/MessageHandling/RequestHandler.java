@@ -1,8 +1,12 @@
 package org.GT659010.MessageHandling;
 
 import org.GT659010.MessageHandling.RequestMessages.LoginPayload;
+import org.GT659010.MessageHandling.RequestMessages.MarketOrderPayload;
 import org.GT659010.MessageHandling.RequestMessages.RegisterPayload;
 import org.GT659010.MessageHandling.RequestMessages.UpdateCredentialsPayload;
+import org.GT659010.OrderHandling.OrderBook;
+import org.GT659010.OrderHandling.OrderTypes.MarketOrder;
+import org.GT659010.OrderHandling.Side;
 import org.GT659010.UserHandling.User;
 
 import java.util.Map;
@@ -10,10 +14,12 @@ import java.util.Objects;
 
 public class RequestHandler {
     private final Map<String, User> userMap;
+    private final OrderBook orderBook;
     private User user;
 
-    public RequestHandler(Map<String, User> userMap) {
+    public RequestHandler(Map<String, User> userMap, OrderBook orderBook) {
         this.userMap = userMap;
+        this.orderBook = orderBook;
     }
 
     public ResponseMessage handleRegistration(RequestMessage requestMessage) {
@@ -114,7 +120,12 @@ public class RequestHandler {
 
     public ResponseMessage handleMarketOrder (RequestMessage requestMessage) {
         ResponseMessage responseMessage = new ResponseMessage();
-
+        MarketOrderPayload r = (MarketOrderPayload) requestMessage.getPayload();
+        Side side = Side.valueOf(r.getType());
+        int size = r.getSize();
+        MarketOrder marketOrder = new MarketOrder(this.user.getUUID(), side, size);
+        orderBook.addNewOrder(marketOrder);
+        responseMessage.setResponse(marketOrder.getOrderId());
         return responseMessage;
     }
 

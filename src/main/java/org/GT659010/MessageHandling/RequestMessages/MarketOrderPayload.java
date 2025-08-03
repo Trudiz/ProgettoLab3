@@ -4,11 +4,11 @@ import org.GT659010.MessageHandling.Payload;
 
 public class MarketOrderPayload implements Payload {
     private String type;
-    private double size;
+    private int size;
 
     public MarketOrderPayload() {}
 
-    public MarketOrderPayload(String type, double size) {
+    public MarketOrderPayload(String type, int size) {
         this.type = type;
         this.size = size;
     }
@@ -21,11 +21,11 @@ public class MarketOrderPayload implements Payload {
         this.type = type;
     }
 
-    public double getSize() {
+    public int getSize() {
         return size;
     }
 
-    public void setSize(double size) {
+    public void setSize(int size) {
         this.size = size;
     }
 }

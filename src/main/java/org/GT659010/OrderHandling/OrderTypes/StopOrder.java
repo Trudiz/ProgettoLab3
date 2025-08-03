@@ -1,13 +1,15 @@
 package org.GT659010.OrderHandling.OrderTypes;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.GT659010.OrderHandling.Order;
 import org.GT659010.OrderHandling.Side;
 
+@JsonTypeName("stop")
 public class StopOrder extends Order {
     private final int stopPrice;
 
-    public StopOrder(int orderId, int userId, Side side, int size, int stopPrice) {
-        super(orderId, userId, side, size);
+    public StopOrder(String userId, Side side, int size, int stopPrice) {
+        super(userId, side, size);
         this.stopPrice = stopPrice;
     }
 

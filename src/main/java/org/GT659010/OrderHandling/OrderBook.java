@@ -10,7 +10,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class OrderBook {
-    private Integer lastTradedPrice;
+    private Integer lastTradedPrice;;
 
     private final Lock lock = new ReentrantLock();
 
@@ -32,11 +32,6 @@ public class OrderBook {
 
     private final List<StopOrder> stopOrders = new ArrayList<>();
     private final List<Trade> tradeHistory = new ArrayList<>();
-    private final AtomicInteger orderIdGenerator = new AtomicInteger(1);
-
-    public int getNextOrderId() {
-        return orderIdGenerator.getAndIncrement();
-    }
 
     public void addNewOrder(Order order) {
         lock.lock(); // Acquisisce il lock
@@ -124,6 +119,14 @@ public class OrderBook {
                     triggeredOrder.getOrderId(), triggeredOrder.getUserId(),
                     triggeredOrder.getSide(), triggeredOrder.getOriginalSize())));
         }
+    }
+
+    public PriorityQueue<LimitOrder> getBids() {
+        return bids;
+    }
+
+    public PriorityQueue<LimitOrder> getAsks() {
+        return asks;
     }
 
     public void printOrderBook() {
