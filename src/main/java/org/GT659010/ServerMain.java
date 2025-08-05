@@ -20,6 +20,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+
+//FIXARE LOADING DELL'ORDER BOOK ALL'AVVIO
+//FIXARE FATTO CHE QUANDO CHIUDE IL SERVER SOVRASCRIVE I VECCHI FILE
+//FIXARE CONTROLLI DI SALDO ED EVITARE CHE CRASHI IL CLIENT SE SALDO < DEL NECESSARIO
+
 public class ServerMain {
     static final int MAX = 25;
     public static AtomicInteger orderIdGenerator;
@@ -28,7 +33,7 @@ public class ServerMain {
     private static final ObjectMapper USERMAPPER =
             new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     /* ====== MAPPA GLOBALE ============================================ */
-    private static final ConcurrentHashMap<String,User> USERS = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<String,User> USERS = new ConcurrentHashMap<>();
 
     /* ====== LOAD all’avvio ========================================== */
     static void load() {
@@ -51,8 +56,8 @@ public class ServerMain {
     }
 
     public static void main(String[] args) throws IOException {
-        try (ServerSocket serverSocket = new ServerSocket(9000);
-             ExecutorService pool = Executors.newFixedThreadPool(MAX)){
+        try (ServerSocket serverSocket = new ServerSocket(9000)){
+            ExecutorService pool = Executors.newFixedThreadPool(MAX);
             System.out.println("Server has started");
             load();
             int highestExistingId = BookMaster.getHighestOrderIdFromHistory();

@@ -5,11 +5,11 @@ import java.time.Instant;
 public class Trade {
     private final int price;
     private final int size;
-    private final int buyerUserId;
-    private final int sellerUserId;
+    private final String buyerUserId;
+    private final String sellerUserId;
     private final Instant timestamp;
 
-    public Trade(int price, int size, int buyerUserId, int sellerUserId) {
+    public Trade(int price, int size, String buyerUserId, String sellerUserId) {
         this.price = price;
         this.size = size;
         this.buyerUserId = buyerUserId;

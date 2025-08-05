@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.GT659010.MessageHandling.RequestMessage;
 import org.GT659010.MessageHandling.RequestMessages.*;
 import org.GT659010.MessageHandling.ResponseMessage;
+import org.GT659010.OrderHandling.Side;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -57,6 +58,7 @@ public class ClientMain {
         switch(tokens[0]) {
             case "register":
                 if (tokens.length == 3 && !clientIsRegistered) {
+                    //DA FIXARE IN FUTURO PROSSIMO
                     clientIsRegistered = true;
                     RegisterPayload p = new RegisterPayload(tokens[1], tokens[2]);
                     request.setOperation(tokens[0]);
@@ -87,9 +89,10 @@ public class ClientMain {
                 break;
             case "insertlimitorder":
                 if (tokens.length == 4 && clientIsRegistered) {
+                    Side side = Side.valueOf(tokens[1].toUpperCase());
                     int size = Integer.parseInt(tokens[2]);
                     int price = Integer.parseInt(tokens[3]);
-                    LimitOrderPayload p = new LimitOrderPayload(tokens[1], size, price);
+                    LimitOrderPayload p = new LimitOrderPayload(side, size, price);
                     request.setOperation(tokens[0]);
                     request.setPayload(p);
                 } else {
@@ -98,8 +101,9 @@ public class ClientMain {
                 break;
             case "insertmarketorder":
                 if (tokens.length == 3 && clientIsRegistered) {
+                    Side side = Side.valueOf(tokens[1].toUpperCase());
                     int size = Integer.parseInt(tokens[2]);
-                    MarketOrderPayload p = new MarketOrderPayload(tokens[1], size);
+                    MarketOrderPayload p = new MarketOrderPayload(side, size);
                     request.setOperation(tokens[0]);
                     request.setPayload(p);
                 } else {
@@ -108,9 +112,10 @@ public class ClientMain {
                 break;
             case "insertstoporder":
                 if (tokens.length == 4 && clientIsRegistered) {
+                    Side side = Side.valueOf(tokens[1].toUpperCase());
                     int size = Integer.parseInt(tokens[2]);
                     int price = Integer.parseInt(tokens[3]);
-                    StopOrderPayload p = new StopOrderPayload(tokens[1], size, price);
+                    StopOrderPayload p = new StopOrderPayload(side, size, price);
                     request.setOperation(tokens[0]);
                     request.setPayload(p);
                 } else {

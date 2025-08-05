@@ -1,23 +1,18 @@
 {
-  "lily" : {
-    "username" : "lily",
-    "password" : "passw0rd",
-    "online" : false,
-    "usdbalance" : 2000000,
-    "btcbalance" : 0
+  "b334a179-caef-4d96-a1ca-86b14698dcdf" : {
+    "username" : "Bellusino",
+    "password" : "Passw0rd",
+    "btcbalance" : 1000050,
+    "usdbalance" : 19999993,
+    "online" : true,
+    "uuid" : "b334a179-caef-4d96-a1ca-86b14698dcdf"
   },
-  "grudy" : {
-    "username" : "grudy",
-    "password" : "passw0rwd",
-    "online" : false,
-    "usdbalance" : 2000000,
-    "btcbalance" : 0
-  },
-  "luso" : {
-    "username" : "luso",
-    "password" : "passw0rd",
-    "online" : false,
-    "usdbalance" : 2000000,
-    "btcbalance" : 0
+  "74465255-dd76-4467-8dee-e53197092c6d" : {
+    "username" : "Grudy",
+    "password" : "Passw0rd",
+    "btcbalance" : 999950,
+    "usdbalance" : 20000007,
+    "online" : true,
+    "uuid" : "74465255-dd76-4467-8dee-e53197092c6d"
   }
 }

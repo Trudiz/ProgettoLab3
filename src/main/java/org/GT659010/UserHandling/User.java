@@ -19,9 +19,9 @@ public class User {
     public User(String username, String password) {
         this.username = username;
         this.password = password;
-        this.userId = ;
-        this.USDbalance = 2000000;
-        this.BTCbalance = 0;
+        this.userId = UUID.randomUUID().toString();
+        this.USDbalance = 20000000;
+        this.BTCbalance = 1000000;
         this.isOnline = true;
     }
 
@@ -39,19 +39,41 @@ public class User {
         this.password = password;
     }
 
-    public Long getUSDbalance() {
-        return USDbalance;
-    }
-    public void setUSDbalance(Long USDbalance) {
+    public int getUSDbalance() {return USDbalance;}
+    public void setUSDbalance(int USDbalance) {
         this.USDbalance = USDbalance;
     }
 
-    public Long getBTCbalance() {
+    public synchronized void decreaseUSDbalance(int amount) {
+        if (this.USDbalance < amount) {
+            throw new IllegalStateException("Saldo USD insufficiente per l'utente " + this.userId);
+        }
+        this.USDbalance -= amount;
+    }
+
+    public synchronized void increaseUSDbalance(int amount) {
+        this.USDbalance += amount;
+    }
+
+    public int getBTCbalance() {
         return BTCbalance;
     }
-    public void setBTCbalance(Long BTCbalance) {
+    public void setBTCbalance(int BTCbalance) {
         this.BTCbalance = BTCbalance;
     }
+
+    public synchronized void decreaseBTCbalance(int amount) {
+        if (this.BTCbalance < amount) {
+            throw new IllegalStateException("Saldo BTC insufficiente per l'utente " + this.userId);
+        }
+        this.BTCbalance -= amount;
+    }
+
+    public synchronized void increaseBTCbalance(int amount) {
+        this.BTCbalance += amount;
+    }
+
+
 
     public boolean isOnline() {
         return isOnline;

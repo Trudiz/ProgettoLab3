@@ -45,9 +45,9 @@ public class ClientHandler implements Runnable {
                 switch (operation) {
                     case "register":
                         responseMessage = requestHandler.handleRegistration(requestMessage);
-                        System.out.println("Register operation successful");
                         //Dopo invio
                         if (responseMessage.getResponse() == 100) {
+                            System.out.println("Register operation successful");
                             ServerMain.saveUser();
                         }
                         System.out.println("Salvato con successo il file");
@@ -57,6 +57,7 @@ public class ClientHandler implements Runnable {
                         responseMessage = requestHandler.handleLogin(requestMessage);
                         //Dopo invio
                         if (responseMessage.getResponse() == 100) {
+                            System.out.println("Login operation successful");
                             ServerMain.saveUser();
                         }
                         jsonOut = mapper.writeValueAsString(responseMessage);
@@ -65,6 +66,7 @@ public class ClientHandler implements Runnable {
                         responseMessage = requestHandler.handleLogout(requestMessage);
 
                         if (responseMessage.getResponse() == 100) {
+                            System.out.println("Logout operation successful");
                             ServerMain.saveUser();
                         }
                         jsonOut = mapper.writeValueAsString(responseMessage);
@@ -76,6 +78,22 @@ public class ClientHandler implements Runnable {
                             ServerMain.saveUser();
                         }
                         jsonOut = mapper.writeValueAsString(responseMessage);
+                        break;
+                    case "insertmarketorder":
+                        responseMessage = requestHandler.handleMarketOrder(requestMessage);
+                        jsonOut = mapper.writeValueAsString(responseMessage);
+                        break;
+                    case "insertlimitorder":
+                        responseMessage = requestHandler.handleLimitOrder(requestMessage);
+                        jsonOut = mapper.writeValueAsString(responseMessage);
+                        break;
+                    case "insertstoporder":
+                        responseMessage = requestHandler.handleStopOrder(requestMessage);
+                        jsonOut = mapper.writeValueAsString(responseMessage);
+                        break;
+                    case "printorderbook":
+                        orderBook.printOrderBook();
+                        jsonOut = mapper.writeValueAsString(orderBook);
                         break;
                     default:
                         responseMessage = new ResponseMessage();

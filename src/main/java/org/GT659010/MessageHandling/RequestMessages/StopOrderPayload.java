@@ -1,25 +1,26 @@
 package org.GT659010.MessageHandling.RequestMessages;
 
 import org.GT659010.MessageHandling.Payload;
+import org.GT659010.OrderHandling.Side;
 
 public class StopOrderPayload implements Payload {
-    private String type;
+    private Side type;
     private int size;
     private int price;
 
     public StopOrderPayload() {}
 
-    public StopOrderPayload(String type, int size, int price) {
+    public StopOrderPayload(Side type, int size, int price) {
         this.type = type;
         this.size = size;
         this.price = price;
     }
 
-    public String getType() {
+    public Side getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(Side type) {
         this.type = type;
     }
 

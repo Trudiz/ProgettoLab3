@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Side {
-    BID("bid"),
-    ASK("ask");
+    BUY("bid"),
+    SELL("ask");
 
     private final String value;
 

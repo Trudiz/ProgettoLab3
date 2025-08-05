@@ -1,23 +1,24 @@
 package org.GT659010.MessageHandling.RequestMessages;
 
 import org.GT659010.MessageHandling.Payload;
+import org.GT659010.OrderHandling.Side;
 
 public class MarketOrderPayload implements Payload {
-    private String type;
+    private Side type;
     private int size;
 
     public MarketOrderPayload() {}
 
-    public MarketOrderPayload(String type, int size) {
+    public MarketOrderPayload(Side type, int size) {
         this.type = type;
         this.size = size;
     }
 
-    public String getType() {
+    public Side getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(Side type) {
         this.type = type;
     }
 

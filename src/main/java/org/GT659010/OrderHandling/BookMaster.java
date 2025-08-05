@@ -21,7 +21,7 @@ public class BookMaster {
     // == File Paths ==
     private static final Path ACTIVEBIDS = Paths.get("activebids.json");
     private static final Path ACTIVEASKS = Paths.get("activeasks.json");
-    private static final Path STORICO_ORDINI = Paths.get("storicoordini.json");
+    private static final Path STORICO_ORDINI = Paths.get("storicoOrdini.json");
 
     // == Jackson Mapper ==
     // Aggiungi JavaTimeModule per gestire correttamente Instant

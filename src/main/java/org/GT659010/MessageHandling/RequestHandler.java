@@ -1,12 +1,12 @@
 package org.GT659010.MessageHandling;
 
-import org.GT659010.MessageHandling.RequestMessages.LoginPayload;
-import org.GT659010.MessageHandling.RequestMessages.MarketOrderPayload;
-import org.GT659010.MessageHandling.RequestMessages.RegisterPayload;
-import org.GT659010.MessageHandling.RequestMessages.UpdateCredentialsPayload;
+import org.GT659010.MessageHandling.RequestMessages.*;
 import org.GT659010.OrderHandling.OrderBook;
+import org.GT659010.OrderHandling.OrderTypes.LimitOrder;
 import org.GT659010.OrderHandling.OrderTypes.MarketOrder;
+import org.GT659010.OrderHandling.OrderTypes.StopOrder;
 import org.GT659010.OrderHandling.Side;
+import org.GT659010.ServerMain;
 import org.GT659010.UserHandling.User;
 
 import java.util.Map;
@@ -30,12 +30,12 @@ public class RequestHandler {
         if (!isValidPassword(password)) {
             responseMessage.setResponse(101);
             responseMessage.setErrorMessage("Invalid password!");
-        } else if (userMap.containsKey(username)) {
+        } else if (ServerMain.USERS.containsKey(username)) {
             responseMessage.setResponse(102);
             responseMessage.setErrorMessage("Username not available!");
         } else {
             this.user = new User(username, password);
-            userMap.putIfAbsent(username, user);
+            ServerMain.USERS.putIfAbsent(username, this.user);
             responseMessage.setResponse(100);
             responseMessage.setErrorMessage("OK!");
         }
@@ -47,7 +47,7 @@ public class RequestHandler {
         LoginPayload r = (LoginPayload) requestMessage.getPayload();
         String username = r.getUsername();
         String password = r.getPassword();
-        User userToLogin = userMap.get(username);
+        User userToLogin = ServerMain.USERS.get(username);
         if (userToLogin == null) {
             responseMessage.setResponse(101);
             responseMessage.setErrorMessage("username/password mismatch or non‑existent username");
@@ -68,7 +68,7 @@ public class RequestHandler {
 
     public ResponseMessage handleLogout(RequestMessage requestMessage) {
         ResponseMessage responseMessage = new ResponseMessage();
-        if (userMap.containsKey(this.user.getUsername())) {
+        if (ServerMain.USERS.containsKey(this.user.getUsername())) {
             this.user.setOnline(false);
             responseMessage.setResponse(100);
             responseMessage.setErrorMessage("OK!");
@@ -87,14 +87,14 @@ public class RequestHandler {
         String newPswrd = r.getNewPassword();
 
         // 1. Controlla subito se l'utente esiste
-        if (!userMap.containsKey(username)) {
+        if (!ServerMain.USERS.containsKey(username)) {
             responseMessage.setResponse(102);
             responseMessage.setErrorMessage("Username non-existent!");
             return responseMessage; // Esci subito
         }
 
         // Ottieni l'utente corretto dalla mappa
-        User userToUpdate = userMap.get(username);
+        User userToUpdate = ServerMain.USERS.get(username);
 
         // 2. Esegui tutti i controlli di validazione in sequenza
         if (!userToUpdate.getPassword().equals(oldPswrd)) {
@@ -121,11 +121,38 @@ public class RequestHandler {
     public ResponseMessage handleMarketOrder (RequestMessage requestMessage) {
         ResponseMessage responseMessage = new ResponseMessage();
         MarketOrderPayload r = (MarketOrderPayload) requestMessage.getPayload();
-        Side side = Side.valueOf(r.getType());
+        Side side = r.getType();
         int size = r.getSize();
         MarketOrder marketOrder = new MarketOrder(this.user.getUUID(), side, size);
         orderBook.addNewOrder(marketOrder);
         responseMessage.setResponse(marketOrder.getOrderId());
+        responseMessage.setErrorMessage("OK!");
+        return responseMessage;
+    }
+
+    public ResponseMessage handleLimitOrder (RequestMessage requestMessage) {
+        ResponseMessage responseMessage = new ResponseMessage();
+        LimitOrderPayload r = (LimitOrderPayload) requestMessage.getPayload();
+        Side side = r.getType();
+        int size = r.getSize();
+        int price = r.getPrice();
+        LimitOrder limitOrder = new LimitOrder(this.user.getUUID(), side, size, price);
+        orderBook.addNewOrder(limitOrder);
+        responseMessage.setResponse(limitOrder.getOrderId());
+        responseMessage.setErrorMessage("OK!");
+        return responseMessage;
+    }
+
+    public ResponseMessage handleStopOrder (RequestMessage requestMessage) {
+        ResponseMessage responseMessage = new ResponseMessage();
+        StopOrderPayload r = (StopOrderPayload) requestMessage.getPayload();
+        Side side = r.getType();
+        int size = r.getSize();
+        int price = r.getPrice();
+        StopOrder stopOrder = new StopOrder(this.user.getUUID(), side, size, price);
+        orderBook.addNewOrder(stopOrder);
+        responseMessage.setResponse(stopOrder.getOrderId());
+        responseMessage.setErrorMessage("OK!");
         return responseMessage;
     }
 
