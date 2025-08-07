@@ -19,7 +19,7 @@ import static org.GT659010.ServerMain.orderIdGenerator;
 public abstract class Order {
     private final int orderId;
     private final String userId;
-    @JsonProperty("type")
+    @JsonProperty("orderType")
     private final Side side;
     private final int originalSize;
     private int remainingSize;
@@ -37,7 +37,6 @@ public abstract class Order {
                  @JsonProperty("type") Side side,
                  @JsonProperty("size") int size,
                  @JsonProperty("timestamp") long timestampSeconds) {
-
         this.orderId = orderId;
         this.userId = userId;
         this.side = side;

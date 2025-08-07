@@ -4,15 +4,14 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import org.GT659010.OrderHandling.OrderTypes.LimitOrder;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,31 +32,29 @@ public class BookMaster {
      * Carica gli ordini attivi dai file JSON e li inserisce nell'order book.
      * @param orderBook L'istanza dell'order book da popolare.
      */
+
     public static void loadActiveOrders(OrderBook orderBook) {
         try {
-            // Carica gli ordini di acquisto (Bids)
-            if (Files.exists(ACTIVEBIDS) && Files.size(ACTIVEBIDS) > 0) {
-                List<LimitOrder> loadedBids = ORDERMAPPER.readValue(ACTIVEBIDS.toFile(),
-                        new TypeReference<List<LimitOrder>>() {});
+            // Crea un "lettore" specifico per una lista di LimitOrder.
+            // Questo non cercherà il campo "orderType" perché sa già che tipo di oggetti creare.
+            ObjectReader reader = ORDERMAPPER.readerFor(new TypeReference<List<LimitOrder>>() {});
 
-                // Aggiunge tutti gli ordini caricati alla coda dei bids
-                // addAll è efficiente per le PriorityQueue
+            // Carica i bids
+            if (Files.exists(ACTIVEBIDS) && Files.size(ACTIVEBIDS) > 0) {
+                List<LimitOrder> loadedBids = reader.readValue(ACTIVEBIDS.toFile());
                 orderBook.getBids().addAll(loadedBids);
-                System.out.println("Loaded " + loadedBids.size() + " active bids.");
+                System.out.println("Caricati " + loadedBids.size() + " bids attivi.");
             }
 
-            // Carica gli ordini di vendita (Asks)
+            // Carica gli asks
             if (Files.exists(ACTIVEASKS) && Files.size(ACTIVEASKS) > 0) {
-                List<LimitOrder> loadedAsks = ORDERMAPPER.readValue(ACTIVEASKS.toFile(),
-                        new TypeReference<List<LimitOrder>>() {});
-
-                // Aggiunge tutti gli ordini caricati alla coda degli asks
+                List<LimitOrder> loadedAsks = reader.readValue(ACTIVEASKS.toFile());
                 orderBook.getAsks().addAll(loadedAsks);
-                System.out.println("Loaded " + loadedAsks.size() + " active asks.");
+                System.out.println("Caricati " + loadedAsks.size() + " asks attivi.");
             }
 
         } catch (Exception e) {
-            System.err.println("Error loading active orders from file.");
+            System.err.println("Errore durante il caricamento degli ordini attivi.");
             e.printStackTrace();
         }
     }
@@ -68,52 +65,61 @@ public class BookMaster {
      */
     public static void saveActiveOrders(OrderBook orderBook) {
         try {
-            System.out.println("Saving active orders to disk...");
-            // Salva i bids
-            ORDERMAPPER.writeValue(ACTIVEBIDS.toFile(), orderBook.getBids());
-            // Salva gli asks
-            ORDERMAPPER.writeValue(ACTIVEASKS.toFile(), orderBook.getAsks());
-            System.out.println("Active orders saved successfully.");
+            System.out.println("Salvataggio ordini attivi su disco...");
+
+            // Crea uno "scrittore" specifico per una lista di LimitOrder.
+            // Questo ignorerà le annotazioni di polimorfismo e non aggiungerà "orderType".
+            ObjectWriter writer = ORDERMAPPER.writerFor(new TypeReference<List<LimitOrder>>() {});
+
+            // Converte le code in liste
+            List<LimitOrder> bidsToSave = new ArrayList<>(orderBook.getBids());
+            List<LimitOrder> asksToSave = new ArrayList<>(orderBook.getAsks());
+
+            // Usa lo scrittore specifico
+            writer.writeValue(ACTIVEBIDS.toFile(), bidsToSave);
+            writer.writeValue(ACTIVEASKS.toFile(), asksToSave);
+
+            System.out.println("Ordini attivi salvati con successo.");
         } catch (Exception e) {
-            System.err.println("Error saving active orders to file.");
+            System.err.println("Errore durante il salvataggio degli ordini attivi.");
             e.printStackTrace();
         }
     }
 
-    public static int getHighestOrderIdFromHistory() {
-        int maxId = 0;
-
-        // Usiamo JsonFactory per creare un parser efficiente
-        JsonFactory factory = new JsonFactory();
-
-        // try-with-resources garantisce che il parser venga chiuso correttamente
-        try (JsonParser parser = factory.createParser(STORICO_ORDINI.toFile())) {
-
-            // Se il file non inizia con un array '[', esci
-            if (parser.nextToken() != JsonToken.START_ARRAY) {
-                return 0;
+    /**
+     * Carica la lista di ordini storici dal file JSON.
+     * @return Una lista di ordini; vuota se il file non esiste.
+     */
+    public static List<HistoricalRecord> loadHistory() {
+        if (Files.exists(STORICO_ORDINI)) {
+            try {
+                StoricoOrdiniFile historyFile = ORDERMAPPER.readValue(STORICO_ORDINI.toFile(), StoricoOrdiniFile.class);
+                System.out.println("Caricati " + historyFile.getOrderList().size() + " ordini dallo storico.");
+                return historyFile.getOrderList();
+            } catch (IOException e) {
+                System.err.println("Errore durante la lettura dello storico ordini.");
+                e.printStackTrace();
             }
-
-            // Itera su tutti gli elementi dell'array
-            while (parser.nextToken() != JsonToken.END_ARRAY) {
-                String fieldName = parser.getCurrentName();
-
-                // Se troviamo il campo "orderId"
-                if ("orderId".equals(fieldName)) {
-                    parser.nextToken(); // Muoviti al valore del campo
-                    int currentId = parser.getIntValue(); // Leggi il valore intero
-
-                    // Aggiorna il massimo se necessario
-                    if (currentId > maxId) {
-                        maxId = currentId;
-                    }
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("Errore durante la lettura dello storico ordini: " + e.getMessage());
         }
+        System.out.println("File storico non trovato. Parto con una cronologia vuota.");
+        return new ArrayList<>();
+    }
 
-        System.out.println("ID massimo trovato nello storico: " + maxId);
-        return maxId;
+    /**
+     * Salva l'intera cronologia di ordini nel file JSON, sovrascrivendolo.
+     * @param historicalOrders La lista completa degli ordini da salvare.
+     */
+    public static void saveHistory(List<HistoricalRecord> historicalOrders) {
+        StoricoOrdiniFile historyFile = new StoricoOrdiniFile();
+        historyFile.setOrderList(historicalOrders);
+
+        try {
+            System.out.println("Salvataggio di " + historicalOrders.size() + " ordini nello storico...");
+            ORDERMAPPER.writeValue(STORICO_ORDINI.toFile(), historyFile);
+            System.out.println("Storico ordini salvato.");
+        } catch (IOException e) {
+            System.err.println("Errore durante il salvataggio dello storico ordini.");
+            e.printStackTrace();
+        }
     }
 }

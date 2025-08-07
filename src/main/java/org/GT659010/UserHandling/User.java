@@ -8,18 +8,16 @@ import java.util.UUID;
 public class User {
     private String username;
     private String password;
-    private String userId;
+    private String uuid;
     private int USDbalance;
     private int BTCbalance;
     private boolean isOnline;
-    private Order[] activeOrders;
-    private Socket socket;
 
     public User() {}
     public User(String username, String password) {
         this.username = username;
         this.password = password;
-        this.userId = UUID.randomUUID().toString();
+        this.uuid = UUID.randomUUID().toString();
         this.USDbalance = 20000000;
         this.BTCbalance = 1000000;
         this.isOnline = true;
@@ -46,7 +44,7 @@ public class User {
 
     public synchronized void decreaseUSDbalance(int amount) {
         if (this.USDbalance < amount) {
-            throw new IllegalStateException("Saldo USD insufficiente per l'utente " + this.userId);
+            throw new IllegalStateException("Saldo USD insufficiente per l'utente " + this.uuid);
         }
         this.USDbalance -= amount;
     }
@@ -64,7 +62,7 @@ public class User {
 
     public synchronized void decreaseBTCbalance(int amount) {
         if (this.BTCbalance < amount) {
-            throw new IllegalStateException("Saldo BTC insufficiente per l'utente " + this.userId);
+            throw new IllegalStateException("Saldo BTC insufficiente per l'utente " + this.uuid);
         }
         this.BTCbalance -= amount;
     }
@@ -72,8 +70,6 @@ public class User {
     public synchronized void increaseBTCbalance(int amount) {
         this.BTCbalance += amount;
     }
-
-
 
     public boolean isOnline() {
         return isOnline;
@@ -83,6 +79,10 @@ public class User {
     }
 
     public String getUUID() {
-        return userId;
+        return uuid;
+    }
+
+    public void setUUID(String uuid) {
+        this.uuid = uuid;
     }
 }

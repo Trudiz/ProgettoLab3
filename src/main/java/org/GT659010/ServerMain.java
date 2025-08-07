@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.GT659010.OrderHandling.BookMaster;
+import org.GT659010.OrderHandling.HistoricalRecord;
+import org.GT659010.OrderHandling.Order;
 import org.GT659010.OrderHandling.OrderBook;
 import org.GT659010.UserHandling.User;
 
@@ -14,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -34,6 +37,7 @@ public class ServerMain {
             new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     /* ====== MAPPA GLOBALE ============================================ */
     public static final ConcurrentHashMap<String,User> USERS = new ConcurrentHashMap<>();
+    private static List<HistoricalRecord> historicalOrders;
 
     /* ====== LOAD all’avvio ========================================== */
     static void load() {
@@ -60,10 +64,15 @@ public class ServerMain {
             ExecutorService pool = Executors.newFixedThreadPool(MAX);
             System.out.println("Server has started");
             load();
-            int highestExistingId = BookMaster.getHighestOrderIdFromHistory();
-            orderIdGenerator = new AtomicInteger(highestExistingId);
+            historicalOrders = BookMaster.loadHistory();
+            int highestId = historicalOrders.stream()
+                    .mapToInt(HistoricalRecord::getOrderId)
+                    .max()
+                    .orElse(0);
+            orderIdGenerator = new AtomicInteger(highestId);
+            System.out.println("Order ID: " + orderIdGenerator);
             //POI DA IMPLEMENTARE CHE VIENE INITIALIZED DA FILE
-            OrderBook orderBook = new OrderBook();
+            OrderBook orderBook = new OrderBook(historicalOrders);
             BookMaster.loadActiveOrders(orderBook);
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {

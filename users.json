@@ -1,18 +1,18 @@
 {
-  "b334a179-caef-4d96-a1ca-86b14698dcdf" : {
-    "username" : "Bellusino",
-    "password" : "Passw0rd",
-    "btcbalance" : 1000050,
-    "usdbalance" : 19999993,
-    "online" : true,
-    "uuid" : "b334a179-caef-4d96-a1ca-86b14698dcdf"
-  },
-  "74465255-dd76-4467-8dee-e53197092c6d" : {
+  "Grudy" : {
     "username" : "Grudy",
     "password" : "Passw0rd",
-    "btcbalance" : 999950,
-    "usdbalance" : 20000007,
-    "online" : true,
-    "uuid" : "74465255-dd76-4467-8dee-e53197092c6d"
+    "uuid" : "1e09a529-25e9-4977-b911-f5325a7d13d3",
+    "usdbalance" : 20000000,
+    "btcbalance" : 1000000,
+    "online" : true
+  },
+  "Vellusino" : {
+    "username" : "Vellusino",
+    "password" : "Passw0rd",
+    "uuid" : "31e7665a-58ae-49e9-84cf-6269d59379be",
+    "usdbalance" : 20000000,
+    "btcbalance" : 1000000,
+    "online" : false
   }
 }

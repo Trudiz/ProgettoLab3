@@ -12,9 +12,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class OrderBook {
     private Integer lastTradedPrice;
+    private final List<HistoricalRecord> historicalOrders;
 
     private final Lock lock = new ReentrantLock();
 
+    public OrderBook(List<HistoricalRecord> historicalOrders) {
+        this.historicalOrders = historicalOrders; // <-- SALVA IL RIFERIMENTO
+    }
 
     // Bids -> Ordini di acquisto (BUY). Prezzo più alto ha la priorità.
     private final PriorityQueue<LimitOrder> bids = new PriorityQueue<>((o1, o2) -> {
