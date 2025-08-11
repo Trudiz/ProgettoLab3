@@ -1,6 +1,7 @@
 package org.GT659010;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.GT659010.MessageHandling.RequestMessage;
 import org.GT659010.MessageHandling.RequestMessages.*;
 import org.GT659010.MessageHandling.ResponseMessage;
@@ -14,6 +15,8 @@ import java.net.Socket;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
 
 public class ClientMain {
 
@@ -28,6 +31,7 @@ public class ClientMain {
              BufferedReader console = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8))) {
 
             ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
 
             /* 3️⃣  Interactive loop */
             String msg;
@@ -44,6 +48,7 @@ public class ClientMain {
 
                     System.out.println("Codice:  " + resp.getResponse());
                     System.out.println("Messaggio: " + resp.getErrorMessage());
+                    System.out.println("Codice: " + resp.getPayload());
                 }
             }
 
@@ -133,10 +138,12 @@ public class ClientMain {
                 }
                 break;
             case "getpricehistory":
-                if (tokens.length == 2 && clientIsRegistered) {
-                    PriceHistoryPayload p = new PriceHistoryPayload(tokens[1]);
+                if (tokens.length == 2) {
+                    String month = tokens[1];
+                    PriceHistoryPayload p =  new PriceHistoryPayload(month);
                     request.setOperation(tokens[0]);
                     request.setPayload(p);
+                    break;
                 } else {
                     System.out.println("Wrong Number of arguments for getpricehistory!");
                 }

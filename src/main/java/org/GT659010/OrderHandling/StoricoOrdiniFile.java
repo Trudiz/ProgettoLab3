@@ -21,4 +21,5 @@ public class StoricoOrdiniFile {
     public void setOrderList(List<HistoricalRecord> orderList) {
         this.orderList = orderList;
     }
+
 }

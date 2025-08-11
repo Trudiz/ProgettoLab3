@@ -1,6 +1,7 @@
 package org.GT659010.MessageHandling;
 
 import org.GT659010.MessageHandling.RequestMessages.*;
+import org.GT659010.OrderHandling.BookLoader;
 import org.GT659010.OrderHandling.OrderBook;
 import org.GT659010.OrderHandling.OrderTypes.LimitOrder;
 import org.GT659010.OrderHandling.OrderTypes.MarketOrder;
@@ -9,6 +10,9 @@ import org.GT659010.OrderHandling.Side;
 import org.GT659010.ServerMain;
 import org.GT659010.UserHandling.User;
 
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -154,6 +158,45 @@ public class RequestHandler {
         responseMessage.setResponse(stopOrder.getOrderId());
         responseMessage.setErrorMessage("OK!");
         return responseMessage;
+    }
+
+    public ResponseMessage handleCancelOrder (RequestMessage requestMessage) {
+        ResponseMessage responseMessage = new ResponseMessage();
+        CancelOrderPayload r = (CancelOrderPayload) requestMessage.getPayload();
+        int orderId = r.getOrderId();
+        boolean cancelled = orderBook.processCancelOrder(orderId);
+        if (cancelled) {
+            responseMessage.setResponse(100);
+            responseMessage.setErrorMessage("Order cancelled!");
+            return responseMessage;
+        }
+        else {
+            responseMessage.setResponse(101);
+            responseMessage.setErrorMessage("Order does not exist / belongs to different user / already finalized / other error cases");
+            return responseMessage;
+        }
+    }
+
+    public ResponseMessage handleGetPriceHistory (RequestMessage requestMessage) {
+        ResponseMessage response = new ResponseMessage(); // La nuova classe
+        try {
+            PriceHistoryPayload r = (PriceHistoryPayload) requestMessage.getPayload();
+            String monthString = r.getMonth();
+            List<PriceResponseMessage> ohlcData = BookLoader.getDailyOHLCForMonth(monthString);
+
+            // Prepara una risposta di successo
+            response.setResponse(100);
+            response.setErrorMessage("Dati storici recuperati con successo.");
+            response.setPayload(ohlcData); // Metti la lista nel payload!
+
+        } catch (Exception e) {
+            // Prepara una risposta di errore
+            response.setResponse(101);
+            response.setErrorMessage("Errore interno del server.");
+            response.setPayload(null); // Nessun dato da inviare
+            e.printStackTrace();
+        }
+        return response;
     }
 
     public boolean isValidPassword(String password) {

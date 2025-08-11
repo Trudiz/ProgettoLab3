@@ -91,9 +91,13 @@ public class ClientHandler implements Runnable {
                         responseMessage = requestHandler.handleStopOrder(requestMessage);
                         jsonOut = mapper.writeValueAsString(responseMessage);
                         break;
-                    case "printorderbook":
-                        orderBook.printOrderBook();
-                        jsonOut = mapper.writeValueAsString(orderBook);
+                    case "cancelorder":
+                        responseMessage = requestHandler.handleCancelOrder(requestMessage);
+                        jsonOut = mapper.writeValueAsString(responseMessage);
+                        break;
+                    case "getpricehistory":
+                        responseMessage = requestHandler.handleGetPriceHistory(requestMessage);
+                        jsonOut = mapper.writeValueAsString(responseMessage);
                         break;
                     default:
                         responseMessage = new ResponseMessage();

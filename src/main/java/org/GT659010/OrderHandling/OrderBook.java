@@ -1,14 +1,18 @@
 package org.GT659010.OrderHandling;
 
+import org.GT659010.MessageHandling.PriceResponseMessage;
 import org.GT659010.OrderHandling.OrderTypes.LimitOrder;
 import org.GT659010.OrderHandling.OrderTypes.MarketOrder;
 import org.GT659010.OrderHandling.OrderTypes.StopOrder;
 import org.GT659010.ServerMain;
 import org.GT659010.UserHandling.User;
 
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 public class OrderBook {
     private Integer lastTradedPrice;
@@ -78,6 +82,33 @@ public class OrderBook {
         }
         trades.forEach(System.out::println);
         tradeHistory.addAll(trades);
+    }
+
+    public boolean processCancelOrder(int orderIdToCancel) {
+        lock.lock();
+        try {
+            // 1. Prova a rimuovere l'ordine dalla coda dei bids (acquisti)
+            boolean cancelled = bids.removeIf(order -> order.getOrderId() == orderIdToCancel);
+
+            // 2. Se non è stato trovato nei bids, prova con gli asks (vendite)
+            if (!cancelled) {
+                cancelled = asks.removeIf(order -> order.getOrderId() == orderIdToCancel);
+            }
+            // 3. Se ancora non trovato, prova tra gli ordini stop pendenti
+            if (!cancelled) {
+                cancelled = stopOrders.removeIf(order -> order.getOrderId() == orderIdToCancel);
+            }
+            // 4. Fornisci un feedback sull'esito dell'operazione
+            if (cancelled) {
+                System.out.println("Ordine " + orderIdToCancel + " cancellato con successo.");
+                return true;
+            } else {
+                System.out.println("Impossibile cancellare l'ordine " + orderIdToCancel + ": non trovato o già eseguito.");
+                return false;
+            }
+        } finally  {
+            lock.unlock();
+        }
     }
 
     private void tryMatch() {
@@ -180,6 +211,58 @@ public class OrderBook {
 
     public PriorityQueue<LimitOrder> getBids() { return bids; }
     public PriorityQueue<LimitOrder> getAsks() { return asks; }
+
+
+    public PriceResponseMessage getPriceHistory(YearMonth targetMonth) {
+        lock.lock();
+        try {
+            // 1. Filtra tutti i trade per ottenere solo quelli del mese specificato.
+            List<Trade> monthlyTrades = this.tradeHistory.stream()
+                    .filter(trade -> {
+                        // Converte il timestamp di ogni trade in YearMonth per il confronto.
+                        // Usiamo ZoneId.systemDefault() per usare il fuso orario del server.
+                        return YearMonth.from(trade.getTimestamp().atZone(ZoneId.systemDefault()))
+                                .equals(targetMonth);
+                    })
+                    .collect(Collectors.toList());
+
+            // 2. Se non ci sono trade per quel mese, ritorna una risposta con valori a zero.
+            if (monthlyTrades.isEmpty()) {
+                return new PriceResponseMessage(targetMonth.toString(), 0, 0, 0, 0);
+            }
+
+            // 3. Ordina i trade per data per trovare facilmente il prezzo di apertura e chiusura.
+            monthlyTrades.sort(Comparator.comparing(Trade::getTimestamp));
+
+            // 4. Calcola i valori OHLC.
+
+            // Open: il prezzo del primo trade del mese.
+            int openPrice = monthlyTrades.get(0).getPrice();
+
+            // Close: il prezzo dell'ultimo trade del mese.
+            int closePrice = monthlyTrades.get(monthlyTrades.size() - 1).getPrice();
+
+            // High: il prezzo massimo nel flusso dei trade del mese.
+            int highPrice = monthlyTrades.stream()
+                    .mapToInt(Trade::getPrice)
+                    .max()
+                    .getAsInt(); // Sicuro perché la lista non è vuota.
+
+            // Low: il prezzo minimo nel flusso dei trade del mese.
+            int lowPrice = monthlyTrades.stream()
+                    .mapToInt(Trade::getPrice)
+                    .min()
+                    .getAsInt();
+
+            // 5. Costruisce e ritorna l'oggetto di risposta con i dati calcolati.
+            return new PriceResponseMessage(targetMonth.toString(), openPrice, closePrice, highPrice, lowPrice);
+
+        } finally {
+            // 6. Rilascia sempre il lock, anche in caso di eccezioni.
+            lock.unlock();
+        }
+    }
+
 
     public void printOrderBook() {
         lock.lock();

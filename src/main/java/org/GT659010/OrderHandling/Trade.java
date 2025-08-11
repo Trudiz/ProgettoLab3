@@ -22,4 +22,12 @@ public class Trade {
         return "TRADE EXECUTED: " + size + " @ " + price +
                 " (Buyer: " + buyerUserId + ", Seller: " + sellerUserId + ") at " + timestamp;
     }
+
+    public Instant getTimestamp() {
+        return timestamp;
+    }
+
+    public int getPrice() {
+        return price;
+    }
 }

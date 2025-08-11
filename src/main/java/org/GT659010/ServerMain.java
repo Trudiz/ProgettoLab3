@@ -3,9 +3,8 @@ package org.GT659010;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.GT659010.OrderHandling.BookMaster;
+import org.GT659010.OrderHandling.BookLoader;
 import org.GT659010.OrderHandling.HistoricalRecord;
-import org.GT659010.OrderHandling.Order;
 import org.GT659010.OrderHandling.OrderBook;
 import org.GT659010.UserHandling.User;
 
@@ -15,7 +14,6 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,7 +62,7 @@ public class ServerMain {
             ExecutorService pool = Executors.newFixedThreadPool(MAX);
             System.out.println("Server has started");
             load();
-            historicalOrders = BookMaster.loadHistory();
+            historicalOrders = BookLoader.loadHistory();
             int highestId = historicalOrders.stream()
                     .mapToInt(HistoricalRecord::getOrderId)
                     .max()
@@ -73,11 +71,11 @@ public class ServerMain {
             System.out.println("Order ID: " + orderIdGenerator);
             //POI DA IMPLEMENTARE CHE VIENE INITIALIZED DA FILE
             OrderBook orderBook = new OrderBook(historicalOrders);
-            BookMaster.loadActiveOrders(orderBook);
+            BookLoader.loadActiveOrders(orderBook);
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 System.out.println("\nServer - Chiusura in corso, salvataggio ordini attivi...");
-                BookMaster.saveActiveOrders(orderBook);
+                BookLoader.saveActiveOrders(orderBook);
                 saveUser();
                 System.out.println("Dati salvati. Uscita.");
             }));
