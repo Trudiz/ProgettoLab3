@@ -5,12 +5,14 @@ import org.GT659010.MessageHandling.Payload;
 public class RegisterPayload implements Payload {
     private String username;
     private String password;
+    private int udpPort;
 
     public RegisterPayload() {}
 
-    public RegisterPayload(String username, String password) {
+    public RegisterPayload(String username, String password, int udpPort) {
         this.username = username;
         this.password = password;
+        this.udpPort = udpPort;
     }
 
     public String getUsername() {
@@ -27,6 +29,14 @@ public class RegisterPayload implements Payload {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public int getUdpPort() {
+        return udpPort;
+    }
+
+    public void setUdpPort(int udpPort) {
+        this.udpPort = udpPort;
     }
 
 }

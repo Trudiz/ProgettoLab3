@@ -1,42 +1,18 @@
 {
-  "orcodio" : {
-    "username" : "orcodio",
-    "password" : "Passw0rd",
-    "uuid" : "9837feaf-865e-4277-b7d6-09c147320f0d",
-    "online" : true,
-    "btcbalance" : 1000000,
-    "usdbalance" : 20000000
-  },
-  "Grudy" : {
+  "a2e1b47c-fd78-4b7b-95d4-c0f42ff525a9" : {
     "username" : "Grudy",
     "password" : "Passw0rd",
-    "uuid" : "1e09a529-25e9-4977-b911-f5325a7d13d3",
+    "uuid" : "a2e1b47c-fd78-4b7b-95d4-c0f42ff525a9",
     "online" : true,
-    "btcbalance" : 1000000,
-    "usdbalance" : 20000000
+    "btcbalance" : 999500,
+    "usdbalance" : 20000500
   },
-  "porco" : {
-    "username" : "porco",
-    "password" : "D!0ooooo",
-    "uuid" : "c08d1cba-2287-48a9-98c4-2604d8c7c94a",
-    "online" : true,
-    "btcbalance" : 1000000,
-    "usdbalance" : 20000000
-  },
-  "Vellusino" : {
+  "9418552c-06f7-44b5-bb25-4758e27c96ff" : {
     "username" : "Vellusino",
     "password" : "Passw0rd",
-    "uuid" : "31e7665a-58ae-49e9-84cf-6269d59379be",
-    "online" : false,
-    "btcbalance" : 1000000,
-    "usdbalance" : 20000000
-  },
-  "palle" : {
-    "username" : "palle",
-    "password" : "Passw0rd",
-    "uuid" : "e93443e4-5ce2-418a-bb02-a31d0c5de15c",
-    "online" : false,
-    "btcbalance" : 1000000,
-    "usdbalance" : 20000000
+    "uuid" : "9418552c-06f7-44b5-bb25-4758e27c96ff",
+    "online" : true,
+    "btcbalance" : 1000500,
+    "usdbalance" : 19999500
   }
 }

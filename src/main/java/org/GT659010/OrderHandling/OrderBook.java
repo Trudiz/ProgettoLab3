@@ -10,18 +10,21 @@ import org.GT659010.UserHandling.User;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 public class OrderBook {
     private Integer lastTradedPrice;
-    private final List<HistoricalRecord> historicalOrders;
+    private final BlockingQueue<Trade> tradeQueue;
+    private final Map<String, User> userMap;
 
     private final Lock lock = new ReentrantLock();
 
-    public OrderBook(List<HistoricalRecord> historicalOrders) {
-        this.historicalOrders = historicalOrders; // <-- SALVA IL RIFERIMENTO
+    public OrderBook(Map<String, User> userMap, BlockingQueue<Trade> tradeQueue) {
+        this.userMap = userMap;
+        this.tradeQueue = tradeQueue;
     }
 
     // Bids -> Ordini di acquisto (BUY). Prezzo più alto ha la priorità.
@@ -130,6 +133,7 @@ public class OrderBook {
         aggressor.decreaseRemainingSize(tradeSize);
         bookOrder.decreaseRemainingSize(tradeSize);
         this.lastTradedPrice = tradePrice;
+        System.out.println("DEBUG-ORDERBOOK: Eseguo trade. La mappa 'this.users' che vedo contiene: " + this.userMap.keySet());
 
         // CORREZIONE: ID utente come String e logica di assegnazione buyer/seller corretta.
         String buyerId;
@@ -146,8 +150,8 @@ public class OrderBook {
         int totalCost = tradeSize * tradePrice / 1000; // Dividi per 1000 perché entrambi sono in millesimi
 
         // Recupera gli oggetti User dalla mappa
-        User buyer = ServerMain.USERS.get(buyerId);
-        User seller = ServerMain.USERS.get(sellerId);
+        User buyer = this.userMap.get(buyerId);
+        User seller = this.userMap.get(sellerId);
 
         // Controlla che gli utenti esistano prima di procedere
         if (buyer != null && seller != null) {
@@ -164,8 +168,15 @@ public class OrderBook {
             System.err.println("ERRORE CRITICO: Utente non trovato durante l'esecuzione del trade. Buyer: " + buyerId + ", Seller: " + sellerId);
             // Poi gestire errori vari
         }
+        Trade newTrade = new Trade(tradePrice, tradeSize, buyerId, sellerId);
+        this.tradeHistory.add(newTrade);
 
-        trades.add(new Trade(tradePrice, tradeSize, buyerId, sellerId));
+        try {
+            this.tradeQueue.put(newTrade);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // Ripristina lo stato di interruzione
+            System.err.println("Thread interrotto durante l'inserimento del trade in coda.");
+        }
 
         // CORREZIONE: Rimuovi l'ordine dalla coda corretta.
         if (bookOrder.isFilled()) {
@@ -212,53 +223,28 @@ public class OrderBook {
     public PriorityQueue<LimitOrder> getBids() { return bids; }
     public PriorityQueue<LimitOrder> getAsks() { return asks; }
 
-
-    public PriceResponseMessage getPriceHistory(YearMonth targetMonth) {
+    public List<Order> getActiveOrdersForUser(String userId) {
         lock.lock();
         try {
-            // 1. Filtra tutti i trade per ottenere solo quelli del mese specificato.
-            List<Trade> monthlyTrades = this.tradeHistory.stream()
-                    .filter(trade -> {
-                        // Converte il timestamp di ogni trade in YearMonth per il confronto.
-                        // Usiamo ZoneId.systemDefault() per usare il fuso orario del server.
-                        return YearMonth.from(trade.getTimestamp().atZone(ZoneId.systemDefault()))
-                                .equals(targetMonth);
-                    })
-                    .collect(Collectors.toList());
+            List<Order> userOrders = new ArrayList<>();
 
-            // 2. Se non ci sono trade per quel mese, ritorna una risposta con valori a zero.
-            if (monthlyTrades.isEmpty()) {
-                return new PriceResponseMessage(targetMonth.toString(), 0, 0, 0, 0);
-            }
+            // Cerca nei bids (ordini di acquisto)
+            bids.stream()
+                    .filter(order -> order.getUserId().equals(userId))
+                    .forEach(userOrders::add);
 
-            // 3. Ordina i trade per data per trovare facilmente il prezzo di apertura e chiusura.
-            monthlyTrades.sort(Comparator.comparing(Trade::getTimestamp));
+            // Cerca negli asks (ordini di vendita)
+            asks.stream()
+                    .filter(order -> order.getUserId().equals(userId))
+                    .forEach(userOrders::add);
 
-            // 4. Calcola i valori OHLC.
+            // Cerca negli stop orders pendenti
+            stopOrders.stream()
+                    .filter(order -> order.getUserId().equals(userId))
+                    .forEach(userOrders::add);
 
-            // Open: il prezzo del primo trade del mese.
-            int openPrice = monthlyTrades.get(0).getPrice();
-
-            // Close: il prezzo dell'ultimo trade del mese.
-            int closePrice = monthlyTrades.get(monthlyTrades.size() - 1).getPrice();
-
-            // High: il prezzo massimo nel flusso dei trade del mese.
-            int highPrice = monthlyTrades.stream()
-                    .mapToInt(Trade::getPrice)
-                    .max()
-                    .getAsInt(); // Sicuro perché la lista non è vuota.
-
-            // Low: il prezzo minimo nel flusso dei trade del mese.
-            int lowPrice = monthlyTrades.stream()
-                    .mapToInt(Trade::getPrice)
-                    .min()
-                    .getAsInt();
-
-            // 5. Costruisce e ritorna l'oggetto di risposta con i dati calcolati.
-            return new PriceResponseMessage(targetMonth.toString(), openPrice, closePrice, highPrice, lowPrice);
-
+            return userOrders;
         } finally {
-            // 6. Rilascia sempre il lock, anche in caso di eccezioni.
             lock.unlock();
         }
     }

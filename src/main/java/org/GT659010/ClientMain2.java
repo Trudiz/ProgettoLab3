@@ -1,25 +1,17 @@
 package org.GT659010;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.GT659010.MessageHandling.RequestMessage;
 import org.GT659010.MessageHandling.RequestMessages.*;
 import org.GT659010.MessageHandling.ResponseMessage;
 import org.GT659010.OrderHandling.Side;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.DatagramSocket;
 import java.net.Socket;
-
-import java.io.*;
-import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.time.YearMonth;
-import java.time.format.DateTimeParseException;
 
-public class ClientMain {
+public class ClientMain2 {
 
     private static boolean clientIsRegistered = false;
 

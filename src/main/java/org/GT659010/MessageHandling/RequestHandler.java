@@ -2,6 +2,7 @@ package org.GT659010.MessageHandling;
 
 import org.GT659010.MessageHandling.RequestMessages.*;
 import org.GT659010.OrderHandling.BookLoader;
+import org.GT659010.OrderHandling.Order;
 import org.GT659010.OrderHandling.OrderBook;
 import org.GT659010.OrderHandling.OrderTypes.LimitOrder;
 import org.GT659010.OrderHandling.OrderTypes.MarketOrder;
@@ -10,20 +11,21 @@ import org.GT659010.OrderHandling.Side;
 import org.GT659010.ServerMain;
 import org.GT659010.UserHandling.User;
 
-import java.time.YearMonth;
-import java.util.ArrayList;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class RequestHandler {
     private final Map<String, User> userMap;
     private final OrderBook orderBook;
     private User user;
+    private Socket clientSocket;
 
-    public RequestHandler(Map<String, User> userMap, OrderBook orderBook) {
+    public RequestHandler(Map<String, User> userMap, OrderBook orderBook, Socket clientSocket) {
         this.userMap = userMap;
         this.orderBook = orderBook;
+        this.clientSocket = clientSocket;
     }
 
     public ResponseMessage handleRegistration(RequestMessage requestMessage) {
@@ -34,12 +36,21 @@ public class RequestHandler {
         if (!isValidPassword(password)) {
             responseMessage.setResponse(101);
             responseMessage.setErrorMessage("Invalid password!");
-        } else if (ServerMain.USERS.containsKey(username)) {
+        } else if (userMap.containsKey(username)) {
             responseMessage.setResponse(102);
             responseMessage.setErrorMessage("Username not available!");
         } else {
             this.user = new User(username, password);
-            ServerMain.USERS.putIfAbsent(username, this.user);
+            // Recupera la porta UDP dal payload
+            int clientUdpPort = r.getUdpPort();
+            // Recupera l'IP dal socket TCP
+            InetAddress clientIp = this.clientSocket.getInetAddress();
+            // Salva le informazioni sull'utente
+            this.user.setUdpAddress(clientIp);
+            this.user.setUdpPort(clientUdpPort);
+
+            userMap.putIfAbsent(this.user.getUUID(), this.user);
+            System.out.println("DEBUG-REQUESTHANDLER: Utente " + this.user.getUUID() + " registrato. Contenuto della mappa passata: " + userMap.keySet());
             responseMessage.setResponse(100);
             responseMessage.setErrorMessage("OK!");
         }
@@ -51,7 +62,10 @@ public class RequestHandler {
         LoginPayload r = (LoginPayload) requestMessage.getPayload();
         String username = r.getUsername();
         String password = r.getPassword();
-        User userToLogin = ServerMain.USERS.get(username);
+        User userToLogin = userMap.values().stream()
+                .filter(u -> u.getUsername().equals(username))
+                .findFirst()
+                .orElse(null);
         if (userToLogin == null) {
             responseMessage.setResponse(101);
             responseMessage.setErrorMessage("username/password mismatch or non‑existent username");
@@ -66,13 +80,24 @@ public class RequestHandler {
             responseMessage.setErrorMessage("OK!");
             userToLogin.setOnline(true);
             this.user = userToLogin;
+            int clientUdpPort = r.getUdpPort();
+            // Recupera l'IP dal socket TCP
+            InetAddress clientIp = this.clientSocket.getInetAddress();
+            // Salva le informazioni sull'utente
+            this.user.setUdpAddress(clientIp);
+            this.user.setUdpPort(clientUdpPort);
+            System.out.println("DEBUG-REQUESTHANDLER: Utente " + this.user.getUUID() + " registrato. Contenuto della mappa passata: " + userMap.keySet());
         }
         return responseMessage;
     }
 
     public ResponseMessage handleLogout(RequestMessage requestMessage) {
         ResponseMessage responseMessage = new ResponseMessage();
-        if (ServerMain.USERS.containsKey(this.user.getUsername())) {
+        User userToLogout = userMap.values().stream()
+                .filter(u -> u.getUsername().equals(this.user.getUsername()))
+                .findFirst()
+                .orElse(null);
+        if (userMap.containsKey(userToLogout.getUUID())) {
             this.user.setOnline(false);
             responseMessage.setResponse(100);
             responseMessage.setErrorMessage("OK!");
@@ -90,16 +115,16 @@ public class RequestHandler {
         String oldPswrd = r.getOldPassword();
         String newPswrd = r.getNewPassword();
 
+        User userToUpdate = userMap.values().stream()
+                .filter(u -> u.getUsername().equals(username))
+                .findFirst()
+                .orElse(null);
         // 1. Controlla subito se l'utente esiste
-        if (!ServerMain.USERS.containsKey(username)) {
+        if (userToUpdate == null) {
             responseMessage.setResponse(102);
             responseMessage.setErrorMessage("Username non-existent!");
             return responseMessage; // Esci subito
         }
-
-        // Ottieni l'utente corretto dalla mappa
-        User userToUpdate = ServerMain.USERS.get(username);
-
         // 2. Esegui tutti i controlli di validazione in sequenza
         if (!userToUpdate.getPassword().equals(oldPswrd)) {
             responseMessage.setResponse(102);
@@ -197,6 +222,15 @@ public class RequestHandler {
             e.printStackTrace();
         }
         return response;
+    }
+
+    public ResponseMessage handleGetUserActiveOrders (RequestMessage requestMessage) {
+        ResponseMessage responseMessage = new ResponseMessage();
+        List<Order> activeOrders = this.orderBook.getActiveOrdersForUser(this.user.getUUID());
+        responseMessage.setResponse(100);
+        responseMessage.setErrorMessage("OK!");
+        responseMessage.setPayload(activeOrders);
+        return responseMessage;
     }
 
     public boolean isValidPassword(String password) {

@@ -30,4 +30,16 @@ public class Trade {
     public int getPrice() {
         return price;
     }
+
+    public int getSize() {
+        return size;
+    }
+
+    public String getBuyerUserId() {
+        return buyerUserId;
+    }
+
+    public String getSellerUserId() {
+        return sellerUserId;
+    }
 }

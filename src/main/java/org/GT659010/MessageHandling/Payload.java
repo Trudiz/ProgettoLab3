@@ -16,6 +16,7 @@ import org.GT659010.MessageHandling.RequestMessages.*;
         @JsonSubTypes.Type(value = MarketOrderPayload.class,       name = "insertMarketOrder"),
         @JsonSubTypes.Type(value = StopOrderPayload.class,         name = "insertStopOrder"),
         @JsonSubTypes.Type(value = CancelOrderPayload.class,       name = "cancelOrder"),
-        @JsonSubTypes.Type(value = PriceHistoryPayload.class,      name = "getPriceHistory")
+        @JsonSubTypes.Type(value = PriceHistoryPayload.class,      name = "getPriceHistory"),
+        @JsonSubTypes.Type(value = GetActiveOrdersPayload.class,      name = "getActiveOrders")
 })
 public interface Payload {}      // <- empty marker interface

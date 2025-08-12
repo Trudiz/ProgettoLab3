@@ -1,7 +1,9 @@
 package org.GT659010.UserHandling;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.GT659010.OrderHandling.Order;
 
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.UUID;
 
@@ -12,6 +14,10 @@ public class User {
     private int USDbalance;
     private int BTCbalance;
     private boolean isOnline;
+    @JsonIgnore // Non vogliamo salvare questi dati nel file users.json
+    private InetAddress udpAddress;
+    @JsonIgnore
+    private int udpPort;
 
     public User() {}
     public User(String username, String password) {
@@ -85,4 +91,9 @@ public class User {
     public void setUUID(String uuid) {
         this.uuid = uuid;
     }
+
+    public InetAddress getUdpAddress() { return udpAddress; }
+    public void setUdpAddress(InetAddress udpAddress) { this.udpAddress = udpAddress; }
+    public int getUdpPort() { return udpPort; }
+    public void setUdpPort(int udpPort) { this.udpPort = udpPort; }
 }

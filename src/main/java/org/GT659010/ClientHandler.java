@@ -35,7 +35,7 @@ public class ClientHandler implements Runnable {
             String line;
             String jsonOut;
             ResponseMessage responseMessage;
-            RequestHandler requestHandler = new RequestHandler(userMap, orderBook);
+            RequestHandler requestHandler = new RequestHandler(userMap, orderBook, socket);
 
             while ((line = in.readLine()) != null) {
                 System.out.println("I'm in the while");
@@ -45,38 +45,18 @@ public class ClientHandler implements Runnable {
                 switch (operation) {
                     case "register":
                         responseMessage = requestHandler.handleRegistration(requestMessage);
-                        //Dopo invio
-                        if (responseMessage.getResponse() == 100) {
-                            System.out.println("Register operation successful");
-                            ServerMain.saveUser();
-                        }
-                        System.out.println("Salvato con successo il file");
                         jsonOut = mapper.writeValueAsString(responseMessage);
                         break;
                     case "login":
                         responseMessage = requestHandler.handleLogin(requestMessage);
-                        //Dopo invio
-                        if (responseMessage.getResponse() == 100) {
-                            System.out.println("Login operation successful");
-                            ServerMain.saveUser();
-                        }
                         jsonOut = mapper.writeValueAsString(responseMessage);
                         break;
                     case "logout":
                         responseMessage = requestHandler.handleLogout(requestMessage);
-
-                        if (responseMessage.getResponse() == 100) {
-                            System.out.println("Logout operation successful");
-                            ServerMain.saveUser();
-                        }
                         jsonOut = mapper.writeValueAsString(responseMessage);
                         break;
                     case "updatecredentials":
                         responseMessage = requestHandler.handleUpdateCredentials(requestMessage);
-
-                        if (responseMessage.getResponse() == 100) {
-                            ServerMain.saveUser();
-                        }
                         jsonOut = mapper.writeValueAsString(responseMessage);
                         break;
                     case "insertmarketorder":
@@ -97,6 +77,10 @@ public class ClientHandler implements Runnable {
                         break;
                     case "getpricehistory":
                         responseMessage = requestHandler.handleGetPriceHistory(requestMessage);
+                        jsonOut = mapper.writeValueAsString(responseMessage);
+                        break;
+                    case "getactiveorders":
+                        responseMessage = requestHandler.handleGetUserActiveOrders(requestMessage);
                         jsonOut = mapper.writeValueAsString(responseMessage);
                         break;
                     default:

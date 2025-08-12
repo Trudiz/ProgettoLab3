@@ -3,10 +3,9 @@ package org.GT659010;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.GT659010.OrderHandling.BookLoader;
-import org.GT659010.OrderHandling.HistoricalRecord;
-import org.GT659010.OrderHandling.OrderBook;
+import org.GT659010.OrderHandling.*;
 import org.GT659010.UserHandling.User;
+import org.GT659010.UserHandling.UserManager;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -16,9 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -29,39 +26,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ServerMain {
     static final int MAX = 25;
     public static AtomicInteger orderIdGenerator;
-    /* ====== CONFIG =================================================== */
-    private static final Path USERFILE = Paths.get("users.json");
-    private static final ObjectMapper USERMAPPER =
-            new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     /* ====== MAPPA GLOBALE ============================================ */
-    public static final ConcurrentHashMap<String,User> USERS = new ConcurrentHashMap<>();
     private static List<HistoricalRecord> historicalOrders;
 
-    /* ====== LOAD all’avvio ========================================== */
-    static void load() {
-        try {
-            if (Files.exists(USERFILE)) {
-                Map<String,User> disk =
-                        USERMAPPER.readValue(USERFILE.toFile(),
-                                new TypeReference<Map<String,User>>() {});
-                USERS.putAll(disk);
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    /* ====== SAVE dopo ogni modifica ================================= */
-    static void saveUser() {
-        try {
-            // snapshot per evitare ConcurrentModificationException
-            USERMAPPER.writeValue(USERFILE.toFile(), new ConcurrentHashMap<>(USERS));
-        } catch     (Exception e) { e.printStackTrace(); }
-    }
 
     public static void main(String[] args) throws IOException {
         try (ServerSocket serverSocket = new ServerSocket(9000)){
             ExecutorService pool = Executors.newFixedThreadPool(MAX);
             System.out.println("Server has started");
-            load();
+            UserManager.loadUsersFromFile();
             historicalOrders = BookLoader.loadHistory();
             int highestId = historicalOrders.stream()
                     .mapToInt(HistoricalRecord::getOrderId)
@@ -69,24 +42,26 @@ public class ServerMain {
                     .orElse(0);
             orderIdGenerator = new AtomicInteger(highestId);
             System.out.println("Order ID: " + orderIdGenerator);
+            BlockingQueue<Trade> tradeQueue = new LinkedBlockingQueue<>();
+            TradeNotifier notifier = new TradeNotifier(tradeQueue, UserManager.getUsers());
+            Thread notifierThread = new Thread(notifier);
+            notifierThread.start();
             //POI DA IMPLEMENTARE CHE VIENE INITIALIZED DA FILE
-            OrderBook orderBook = new OrderBook(historicalOrders);
+            OrderBook orderBook = new OrderBook(UserManager.getUsers(), tradeQueue);
             BookLoader.loadActiveOrders(orderBook);
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 System.out.println("\nServer - Chiusura in corso, salvataggio ordini attivi...");
                 BookLoader.saveActiveOrders(orderBook);
-                saveUser();
+                BookLoader.saveHistory(historicalOrders);
+                UserManager.saveUsersToFile();
                 System.out.println("Dati salvati. Uscita.");
             }));
-            //Dopo dovrò aggiungere UDP
-            //DataInputStream in = new DataInputStream(socket.getInputStream());
-            //DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
             while(true){
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Client has connected");
-                pool.execute(new ClientHandler(clientSocket, USERS, orderBook));
+                pool.execute(new ClientHandler(clientSocket, UserManager.getUsers(), orderBook));
             }
         } catch (IOException e) {
             System.out.println(e);
